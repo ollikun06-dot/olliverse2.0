@@ -6,8 +6,9 @@ import Link from "next/link"
 import { fetcher, getChapterPagesUrl, proxyImage } from "@/lib/manga-api"
 import type { ChapterPage } from "@/lib/manga-api"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, ChevronUp, Loader2, AlertCircle, BookOpen } from "lucide-react"
+import { ArrowLeft, ChevronUp, Loader2, AlertCircle, BookOpen, Sparkles } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
+import { EnhancedImage } from "@/components/image-enhancer"
 
 export default function ReaderPage({
   params,
@@ -21,6 +22,7 @@ export default function ReaderPage({
   )
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [aiMode, setAiMode] = useState(false)
 
   const handleScroll = useCallback(() => {
     setShowScrollTop(window.scrollY > 500)
@@ -51,6 +53,7 @@ export default function ReaderPage({
       <motion.header
         initial={{ y: -60 }}
         animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl"
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -60,14 +63,31 @@ export default function ReaderPage({
           >
             <ArrowLeft className="h-4 w-4" />
             <BookOpen className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">Manga<span className="text-primary">Verse</span></span>
+            <span className="font-semibold text-foreground">Olli<span className="text-primary">Verse</span></span>
           </Link>
 
-          {pages?.length ? (
-            <span className="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-              {currentPage} / {pages.length}
-            </span>
-          ) : null}
+          <div className="flex items-center gap-3">
+            {/* AI Enhance toggle */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setAiMode(!aiMode)}
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                aiMode
+                  ? "bg-primary/15 text-primary ring-1 ring-primary/30 neon-box"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Sparkles className={`h-3.5 w-3.5 ${aiMode ? "animate-glow-pulse" : ""}`} />
+              AI Enhance
+            </motion.button>
+
+            {pages?.length ? (
+              <span className="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                {currentPage} / {pages.length}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -82,18 +102,43 @@ export default function ReaderPage({
         ) : null}
       </motion.header>
 
+      {/* AI Mode indicator banner */}
+      <AnimatePresence>
+        {aiMode && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="fixed top-[53px] left-0 right-0 z-40 overflow-hidden border-b border-primary/20 bg-primary/5 backdrop-blur-sm"
+          >
+            <div className="mx-auto flex max-w-5xl items-center justify-center gap-2 px-4 py-1.5 text-xs font-bold text-primary">
+              <Sparkles className="h-3 w-3 animate-glow-pulse" />
+              AI Enhancement Mode Active - Hover over pages to enhance individually
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <main className="mx-auto max-w-5xl px-0 pb-16 pt-16 sm:px-4">
         {isLoading && (
-          <div className="flex items-center justify-center py-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-center py-32"
+          >
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Loading chapter...</p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {error && (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-32 text-center"
+          >
             <AlertCircle className="mb-4 h-16 w-16 text-destructive/50" />
             <p className="text-lg text-muted-foreground">
               Failed to load chapter. Please try again.
@@ -104,7 +149,7 @@ export default function ReaderPage({
             >
               Go Home
             </Link>
-          </div>
+          </motion.div>
         )}
 
         {pages && pages.length > 0 && (
@@ -115,24 +160,40 @@ export default function ReaderPage({
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "300px" }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="relative"
               >
-                <img
-                  src={proxyImage(page.img) || "/placeholder.svg"}
-                  alt={`Page ${page.page}`}
-                  className="w-full h-auto"
-                  loading={index < 3 ? "eager" : "lazy"}
-                  decoding={index < 3 ? "sync" : "async"}
-                  fetchPriority={index < 3 ? "high" : "auto"}
-                  referrerPolicy="no-referrer"
-                  style={{ imageRendering: "auto" }}
-                />
+                {aiMode ? (
+                  <EnhancedImage
+                    src={proxyImage(page.img)}
+                    alt={`Page ${page.page}`}
+                    className="w-full h-auto"
+                    loading={index < 3 ? "eager" : "lazy"}
+                    fetchPriority={index < 3 ? "high" : "auto"}
+                  />
+                ) : (
+                  <img
+                    src={proxyImage(page.img) || "/placeholder.svg"}
+                    alt={`Page ${page.page}`}
+                    className="w-full h-auto"
+                    loading={index < 3 ? "eager" : "lazy"}
+                    decoding={index < 3 ? "sync" : "async"}
+                    fetchPriority={index < 3 ? "high" : "auto"}
+                    referrerPolicy="no-referrer"
+                    style={{ imageRendering: "auto" }}
+                  />
+                )}
               </motion.div>
             ))}
 
             {/* End of chapter */}
-            <div className="flex flex-col items-center gap-4 py-16 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center gap-4 py-16 text-center"
+            >
               <p className="text-lg font-semibold text-foreground">
                 End of Chapter
               </p>
@@ -142,7 +203,7 @@ export default function ReaderPage({
               >
                 Browse More Manga
               </Link>
-            </div>
+            </motion.div>
           </div>
         )}
 

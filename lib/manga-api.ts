@@ -99,6 +99,7 @@ export async function searchManga(query: string, limit = 20, offset = 0): Promis
   params.append("includes[]", "cover_art")
   params.append("contentRating[]", "safe")
   params.append("contentRating[]", "suggestive")
+  params.append("availableTranslatedLanguage[]", "en")
   params.append("order[relevance]", "desc")
   const res = await fetch(`${MANGADEX}/manga?${params}`, { next: { revalidate: 60 } })
   if (!res.ok) throw new Error(`MangaDex API error: ${res.status}`)
@@ -117,6 +118,7 @@ export async function getPopularManga(limit = 20, offset = 0): Promise<MangaSear
   params.append("includes[]", "cover_art")
   params.append("contentRating[]", "safe")
   params.append("contentRating[]", "suggestive")
+  params.append("availableTranslatedLanguage[]", "en")
   params.append("order[followedCount]", "desc")
   const res = await fetch(`${MANGADEX}/manga?${params}`, { next: { revalidate: 60 } })
   if (!res.ok) throw new Error(`MangaDex API error: ${res.status}`)
@@ -135,6 +137,7 @@ export async function getLatestUpdates(limit = 20, offset = 0): Promise<MangaSea
   params.append("includes[]", "cover_art")
   params.append("contentRating[]", "safe")
   params.append("contentRating[]", "suggestive")
+  params.append("availableTranslatedLanguage[]", "en")
   params.append("order[latestUploadedChapter]", "desc")
   const res = await fetch(`${MANGADEX}/manga?${params}`, { next: { revalidate: 60 } })
   if (!res.ok) throw new Error(`MangaDex API error: ${res.status}`)
@@ -153,6 +156,7 @@ export async function getRecentManga(limit = 20, offset = 0): Promise<MangaSearc
   params.append("includes[]", "cover_art")
   params.append("contentRating[]", "safe")
   params.append("contentRating[]", "suggestive")
+  params.append("availableTranslatedLanguage[]", "en")
   params.append("order[createdAt]", "desc")
   const res = await fetch(`${MANGADEX}/manga?${params}`, { next: { revalidate: 60 } })
   if (!res.ok) throw new Error(`MangaDex API error: ${res.status}`)
@@ -186,19 +190,8 @@ export async function getMangaInfo(id: string): Promise<MangaInfo> {
   let chapRes = await fetch(`${MANGADEX}/chapter?${chapParams}`, { next: { revalidate: 60 } })
   let chapJson = chapRes.ok ? await chapRes.json() : { data: [] }
 
-  // If no English chapters found, try without language filter
-  if (chapJson.data.length === 0) {
-    const fallbackParams = new URLSearchParams()
-    fallbackParams.append("manga", id)
-    fallbackParams.append("limit", "96")
-    fallbackParams.append("offset", "0")
-    fallbackParams.append("order[chapter]", "asc")
-    fallbackParams.append("contentRating[]", "safe")
-    fallbackParams.append("contentRating[]", "suggestive")
-    fallbackParams.append("includes[]", "scanlation_group")
-    chapRes = await fetch(`${MANGADEX}/chapter?${fallbackParams}`, { next: { revalidate: 60 } })
-    chapJson = chapRes.ok ? await chapRes.json() : { data: [] }
-  }
+  // If no English chapters found, keep empty - English only
+  // No fallback to other languages
 
   const chapters: MangaChapter[] = chapJson.data.map(
     (ch: { id: string; attributes: { title: string | null; chapter: string | null; volume: string | null; publishAt: string | null } }) => ({
@@ -235,6 +228,8 @@ export async function getMangaByCategory(
   params.append("offset", String(offset))
   params.append("includes[]", "cover_art")
   params.append("order[followedCount]", "desc")
+
+  params.append("availableTranslatedLanguage[]", "en")
 
   if (category === "manga") {
     params.append("originalLanguage[]", "ja")

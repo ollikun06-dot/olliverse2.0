@@ -125,3 +125,23 @@ html {
     transform: translateY(0);
   }
 }
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.97; }
+  75% { opacity: 1; }
+  87% { opacity: 0.95; }
+}
+
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  50% { transform: translateY(-40vh) translateX(20px) scale(1.5); }
+  100% { transform: translateY(-80vh) translateX(-10px) scale(0.5); opacity: 0; }
+}

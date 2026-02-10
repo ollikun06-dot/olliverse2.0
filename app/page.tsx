@@ -1,5 +1,6 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import useSWR from "swr"
 import { Navbar } from "@/components/navbar"
 import { HeroSection } from "@/components/hero-section"
@@ -9,6 +10,11 @@ import { fetcher, getPopularUrl, getLatestUrl, getRecentUrl } from "@/lib/manga-
 import type { MangaSearchResponse } from "@/lib/manga-api"
 import { CategorySection } from "@/components/category-section"
 import { motion } from "framer-motion"
+
+const Anime3DBackground = dynamic(
+  () => import("@/components/anime-3d-background").then((m) => m.Anime3DBackground),
+  { ssr: false }
+)
 
 export default function HomePage() {
   const { data: popular, isLoading: loadingPopular } = useSWR<MangaSearchResponse>(
@@ -28,7 +34,11 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <HeroSection />
+      {/* Anime 3D background behind hero */}
+      <div className="relative">
+        <Anime3DBackground />
+        <HeroSection />
+      </div>
 
       {/* Category Browse Section */}
       <motion.div
@@ -114,13 +124,19 @@ export default function HomePage() {
       </motion.div>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50 py-8">
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="border-t border-border bg-card/50 py-8"
+      >
         <div className="mx-auto max-w-7xl px-4 text-center lg:px-8">
           <p className="text-sm text-muted-foreground">
-            MangaVerse - Powered by MangaDex. All manga content belongs to their respective creators.
+            OlliVerse - Powered by MangaDex. All manga content belongs to their respective creators.
           </p>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   )
 }
