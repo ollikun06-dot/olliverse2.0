@@ -154,9 +154,22 @@ export function HeroSection() {
         style={{ y: fgY }}
         className="pointer-events-none absolute inset-0 gpu-accelerated"
       >
-        {/* Anime speed lines */}
+        {/* Anime speed lines - deterministic values to avoid hydration mismatch */}
         <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: 12 }).map((_, i) => (
+          {[
+            { w: 132, top: 5, dur: 3.4 },
+            { w: 98, top: 13, dur: 4.1 },
+            { w: 155, top: 21, dur: 3.7 },
+            { w: 87, top: 29, dur: 4.5 },
+            { w: 143, top: 37, dur: 3.2 },
+            { w: 110, top: 45, dur: 4.8 },
+            { w: 168, top: 53, dur: 3.6 },
+            { w: 95, top: 61, dur: 4.3 },
+            { w: 126, top: 69, dur: 3.9 },
+            { w: 148, top: 77, dur: 4.0 },
+            { w: 80, top: 85, dur: 3.5 },
+            { w: 115, top: 93, dur: 4.6 },
+          ].map((line, i) => (
             <motion.div
               key={i}
               animate={{
@@ -164,15 +177,15 @@ export function HeroSection() {
                 opacity: [0, 0.04, 0],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
+                duration: line.dur,
                 repeat: Infinity,
                 delay: i * 0.4,
                 ease: "linear",
               }}
               className="absolute h-px gpu-accelerated"
               style={{
-                width: `${60 + Math.random() * 120}px`,
-                top: `${5 + i * 8}%`,
+                width: `${line.w}px`,
+                top: `${line.top}%`,
                 background: `linear-gradient(90deg, transparent, hsl(185 100% 55% / 0.3), transparent)`,
               }}
             />

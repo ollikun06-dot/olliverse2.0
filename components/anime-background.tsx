@@ -106,18 +106,27 @@ export function AnimeBackground() {
         style={{ y: layer2Y }}
         className="absolute inset-0 gpu-accelerated"
       >
-        {/* Diagonal speed lines */}
+        {/* Diagonal speed lines - deterministic values to avoid hydration mismatch */}
         <div className="absolute inset-0 opacity-[0.02]">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {[
+            { w: 245, top: 10, left: 12, rot: -11, op: 0.55 },
+            { w: 188, top: 22, left: 53, rot: -9, op: 0.68 },
+            { w: 297, top: 34, left: 6, rot: -13, op: 0.42 },
+            { w: 161, top: 46, left: 61, rot: -7, op: 0.73 },
+            { w: 213, top: 58, left: 35, rot: -14, op: 0.51 },
+            { w: 270, top: 70, left: 72, rot: -10, op: 0.38 },
+            { w: 198, top: 82, left: 26, rot: -12, op: 0.65 },
+            { w: 149, top: 94, left: 48, rot: -8, op: 0.45 },
+          ].map((line, i) => (
             <div
               key={i}
               className="absolute h-px bg-[hsl(185,100%,55%)]"
               style={{
-                width: `${120 + Math.random() * 200}px`,
-                top: `${10 + i * 12}%`,
-                left: `${Math.random() * 80}%`,
-                transform: `rotate(${-15 + Math.random() * 10}deg)`,
-                opacity: 0.3 + Math.random() * 0.5,
+                width: `${line.w}px`,
+                top: `${line.top}%`,
+                left: `${line.left}%`,
+                transform: `rotate(${line.rot}deg)`,
+                opacity: line.op,
               }}
             />
           ))}
