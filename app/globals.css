@@ -9,44 +9,64 @@
   .perspective-1000 {
     perspective: 1000px;
   }
+  .perspective-2000 {
+    perspective: 2000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
   .glass {
-    background: hsl(240 15% 8% / 0.7);
+    background: hsl(240 15% 6% / 0.75);
     backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid hsl(185 100% 55% / 0.06);
+  }
+  .glass-card {
+    background: hsl(240 15% 7% / 0.6);
+    backdrop-filter: blur(16px) saturate(1.4);
     border: 1px solid hsl(185 100% 55% / 0.08);
   }
   .neon-text {
-    text-shadow: 0 0 8px hsl(185 100% 55% / 0.4), 0 0 30px hsl(185 100% 55% / 0.15);
+    text-shadow: 0 0 10px hsl(185 100% 55% / 0.5), 0 0 40px hsl(185 100% 55% / 0.15), 0 0 80px hsl(185 100% 55% / 0.05);
+  }
+  .neon-text-pink {
+    text-shadow: 0 0 10px hsl(330 90% 65% / 0.5), 0 0 40px hsl(330 90% 65% / 0.15);
   }
   .neon-box {
-    box-shadow: 0 0 12px hsl(185 100% 55% / 0.12), 0 0 40px hsl(185 100% 55% / 0.04), inset 0 0 12px hsl(185 100% 55% / 0.04);
+    box-shadow: 0 0 15px hsl(185 100% 55% / 0.12), 0 0 50px hsl(185 100% 55% / 0.04), inset 0 0 15px hsl(185 100% 55% / 0.04);
+  }
+  .neon-border {
+    box-shadow: 0 0 8px hsl(185 100% 55% / 0.2), inset 0 0 8px hsl(185 100% 55% / 0.05);
   }
   .gpu-accelerated {
     transform: translateZ(0);
     will-change: transform, opacity;
     backface-visibility: hidden;
   }
+  .anime-glow {
+    filter: drop-shadow(0 0 12px hsl(185 100% 55% / 0.3)) drop-shadow(0 0 40px hsl(185 100% 55% / 0.1));
+  }
 }
 
 @layer base {
   :root {
-    --background: 240 15% 5%;
-    --foreground: 210 20% 95%;
-    --card: 240 15% 8%;
-    --card-foreground: 210 20% 95%;
-    --popover: 240 15% 8%;
-    --popover-foreground: 210 20% 95%;
+    --background: 240 15% 4%;
+    --foreground: 210 20% 96%;
+    --card: 240 15% 7%;
+    --card-foreground: 210 20% 96%;
+    --popover: 240 15% 7%;
+    --popover-foreground: 210 20% 96%;
     --primary: 185 100% 55%;
-    --primary-foreground: 240 15% 5%;
-    --secondary: 240 12% 13%;
+    --primary-foreground: 240 15% 4%;
+    --secondary: 240 12% 12%;
     --secondary-foreground: 210 15% 85%;
-    --muted: 240 12% 13%;
+    --muted: 240 12% 12%;
     --muted-foreground: 220 10% 50%;
     --accent: 330 90% 65%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 16%;
-    --input: 240 10% 16%;
+    --border: 240 10% 14%;
+    --input: 240 10% 14%;
     --ring: 185 100% 55%;
     --chart-1: 185 100% 55%;
     --chart-2: 330 90% 65%;
@@ -54,13 +74,13 @@
     --chart-4: 45 90% 55%;
     --chart-5: 280 70% 60%;
     --radius: 1rem;
-    --sidebar-background: 240 15% 5%;
-    --sidebar-foreground: 210 20% 95%;
+    --sidebar-background: 240 15% 4%;
+    --sidebar-foreground: 210 20% 96%;
     --sidebar-primary: 185 100% 55%;
-    --sidebar-primary-foreground: 240 15% 5%;
-    --sidebar-accent: 240 12% 13%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 240 10% 16%;
+    --sidebar-primary-foreground: 240 15% 4%;
+    --sidebar-accent: 240 12% 12%;
+    --sidebar-accent-foreground: 210 20% 96%;
+    --sidebar-border: 240 10% 14%;
     --sidebar-ring: 185 100% 55%;
   }
 }
@@ -74,6 +94,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
   img {
     content-visibility: auto;
@@ -82,18 +103,19 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(240 15% 5%);
+  background: hsl(240 15% 4%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(240 10% 18%);
-  border-radius: 3px;
+  background: hsl(240 10% 16%);
+  border-radius: 2px;
   transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(185 100% 55% / 0.7);
+  box-shadow: 0 0 8px hsl(185 100% 55% / 0.5);
 }
 
 /* Smooth scroll */
@@ -105,7 +127,7 @@ html {
 /* Custom selection */
 ::selection {
   background: hsl(185 100% 55% / 0.25);
-  color: hsl(210 20% 95%);
+  color: hsl(210 20% 96%);
 }
 
 /* Page transition base */
@@ -123,5 +145,49 @@ html {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Anime energy ring */
+@keyframes energy-ring {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* Manga panel flash */
+@keyframes panel-flash {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.03;
+  }
+}
+
+/* Kanji float */
+@keyframes kanji-drift {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.06;
+  }
+  90% {
+    opacity: 0.06;
+  }
+  100% {
+    transform: translateY(-100px) rotate(15deg);
+    opacity: 0;
   }
 }

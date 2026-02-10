@@ -8,7 +8,8 @@ import { MangaGridSkeleton } from "@/components/manga-skeleton"
 import { fetcher, getPopularUrl, getLatestUrl, getRecentUrl } from "@/lib/manga-api"
 import type { MangaSearchResponse } from "@/lib/manga-api"
 import { CategorySection } from "@/components/category-section"
-import { motion } from "framer-motion"
+import { AnimeBackground } from "@/components/anime-background"
+import { ScrollSection } from "@/components/scroll-section"
 
 export default function HomePage() {
   const { data: popular, isLoading: loadingPopular } = useSWR<MangaSearchResponse>(
@@ -25,102 +26,90 @@ export default function HomePage() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="relative min-h-screen">
+      {/* Persistent anime particle background with parallax */}
+      <AnimeBackground />
 
-      <HeroSection />
+      {/* Content layer */}
+      <div className="relative z-10">
+        <Navbar />
 
-      {/* Category Browse Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
-      >
-        <CategorySection />
-      </motion.div>
+        <HeroSection />
 
-      {/* Popular Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
-      >
-        {loadingPopular ? (
-          <div>
-            <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              Popular Manga
-            </h2>
-            <MangaGridSkeleton />
+        {/* Category Browse Section */}
+        <ScrollSection className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+          <CategorySection />
+        </ScrollSection>
+
+        {/* Popular Section */}
+        <ScrollSection delay={0.1} className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+          {loadingPopular ? (
+            <div>
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                Popular Manga
+              </h2>
+              <MangaGridSkeleton />
+            </div>
+          ) : popular?.results?.length ? (
+            <MangaGrid
+              manga={popular.results.slice(0, 12)}
+              title="Popular Manga"
+              subtitle="Trending titles everyone is reading"
+            />
+          ) : null}
+        </ScrollSection>
+
+        {/* Latest Updates Section */}
+        <ScrollSection delay={0.1} className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+          {loadingLatest ? (
+            <div>
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                Latest Updates
+              </h2>
+              <MangaGridSkeleton />
+            </div>
+          ) : latest?.results?.length ? (
+            <MangaGrid
+              manga={latest.results.slice(0, 12)}
+              title="Latest Updates"
+              subtitle="Recently updated chapters"
+            />
+          ) : null}
+        </ScrollSection>
+
+        {/* Recently Added Section */}
+        <ScrollSection delay={0.1} className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+          {loadingRecent ? (
+            <div>
+              <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                Recently Added
+              </h2>
+              <MangaGridSkeleton />
+            </div>
+          ) : recent?.results?.length ? (
+            <MangaGrid
+              manga={recent.results.slice(0, 12)}
+              title="Recently Added"
+              subtitle="Fresh new titles just for you"
+            />
+          ) : null}
+        </ScrollSection>
+
+        {/* Footer */}
+        <footer className="relative border-t border-border bg-[hsl(240,15%,4%)]/80 py-12 backdrop-blur-xl">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute left-1/2 top-0 h-px w-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
           </div>
-        ) : popular?.results?.length ? (
-          <MangaGrid
-            manga={popular.results.slice(0, 12)}
-            title="Popular Manga"
-            subtitle="Trending titles everyone is reading"
-          />
-        ) : null}
-      </motion.div>
-
-      {/* Latest Updates Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
-      >
-        {loadingLatest ? (
-          <div>
-            <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              Latest Updates
-            </h2>
-            <MangaGridSkeleton />
+          <div className="relative mx-auto max-w-7xl px-4 text-center lg:px-8">
+            <p className="text-lg font-bold text-foreground">
+              Olli<span className="text-primary neon-text">Verse</span>
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Powered by MangaDex. All manga content belongs to their respective creators.
+            </p>
           </div>
-        ) : latest?.results?.length ? (
-          <MangaGrid
-            manga={latest.results.slice(0, 12)}
-            title="Latest Updates"
-            subtitle="Recently updated chapters"
-          />
-        ) : null}
-      </motion.div>
-
-      {/* Recently Added Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
-      >
-        {loadingRecent ? (
-          <div>
-            <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              Recently Added
-            </h2>
-            <MangaGridSkeleton />
-          </div>
-        ) : recent?.results?.length ? (
-          <MangaGrid
-            manga={recent.results.slice(0, 12)}
-            title="Recently Added"
-            subtitle="Fresh new titles just for you"
-          />
-        ) : null}
-      </motion.div>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card/50 py-8">
-        <div className="mx-auto max-w-7xl px-4 text-center lg:px-8">
-          <p className="text-sm text-muted-foreground">
-            MangaVerse - Powered by MangaDex. All manga content belongs to their respective creators.
-          </p>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   )
 }

@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import useSWR from "swr"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useInView } from "framer-motion"
 import { BookOpen, Globe, Flame, ArrowRight } from "lucide-react"
 import { MangaGrid } from "./manga-grid"
 import { MangaGridSkeleton } from "./manga-skeleton"
@@ -42,6 +42,8 @@ const categories = [
 
 export function CategorySection() {
   const [active, setActive] = useState<"manga" | "manhwa" | "nsfw">("manga")
+  const sectionRef = useRef<HTMLDivElement>(null)
+  const isInView = useInView(sectionRef, { once: true, margin: "-80px" })
 
   const { data, isLoading } = useSWR<MangaSearchResponse>(
     getCategoryUrl(active),
@@ -51,78 +53,104 @@ export function CategorySection() {
   const activeCategory = categories.find((c) => c.id === active)!
 
   return (
-    <section>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-            Browse by Category
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Explore manga, manhwa, and more by type
-          </p>
+    <section ref={sectionRef}>
+      <motion.div
+        initial={{ opacity: 0, y: 40, rotateX: 8 }}
+        animate={
+          isInView
+            ? { opacity: 1, y: 0, rotateX: 0 }
+            : { opacity: 0, y: 40, rotateX: 8 }
+        }
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="perspective-1000"
+      >
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+              Browse by Category
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Explore manga, manhwa, and more by type
+            </p>
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
+              transition={{ delay: 0.3, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-3 h-0.5 w-20 origin-left rounded-full bg-gradient-to-r from-accent to-accent/0"
+            />
+          </div>
+          <Link
+            href={`/category/${active}`}
+            className="group flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+          >
+            View all {activeCategory.label}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
-        <Link
-          href={`/category/${active}`}
-          className="group flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-        >
-          View all {activeCategory.label}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
 
-      {/* Category tabs */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        {categories.map((cat) => {
-          const isActive = active === cat.id
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActive(cat.id)}
-              className="relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors"
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="category-tab"
-                  className={`absolute inset-0 rounded-xl ${cat.bg} ring-1 ${cat.ring}`}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              <span
-                className={`relative z-10 flex items-center gap-2 ${
-                  isActive ? cat.color : "text-muted-foreground hover:text-foreground"
-                }`}
+        {/* Category tabs with 3D hover */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          {categories.map((cat) => {
+            const isActive = active === cat.id
+            return (
+              <motion.button
+                key={cat.id}
+                onClick={() => setActive(cat.id)}
+                whileHover={{ scale: 1.05, rotateY: 5 }}
+                whileTap={{ scale: 0.97 }}
+                className="relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors"
               >
-                <cat.icon className="h-4 w-4" />
-                {cat.label}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+                {isActive && (
+                  <motion.div
+                    layoutId="category-tab"
+                    className={`absolute inset-0 rounded-xl ${cat.bg} ring-1 ${cat.ring}`}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  />
+                )}
+                <span
+                  className={`relative z-10 flex items-center gap-2 ${
+                    isActive
+                      ? cat.color
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <cat.icon className="h-4 w-4" />
+                  {cat.label}
+                </span>
+              </motion.button>
+            )
+          })}
+        </div>
 
-      {/* Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={active}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {isLoading ? (
-            <MangaGridSkeleton count={12} />
-          ) : data?.results?.length ? (
-            <MangaGrid manga={data.results.slice(0, 12)} />
-          ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16">
-              <activeCategory.icon className="mb-3 h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm text-muted-foreground">
-                No titles found in this category.
-              </p>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+        {/* Content with 3D page flip */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, y: 20, rotateX: 6 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            exit={{ opacity: 0, y: -20, rotateX: -6 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="perspective-1000"
+          >
+            {isLoading ? (
+              <MangaGridSkeleton count={12} />
+            ) : data?.results?.length ? (
+              <MangaGrid manga={data.results.slice(0, 12)} />
+            ) : (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card/50 py-16 backdrop-blur-sm">
+                <activeCategory.icon className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">
+                  No titles found in this category.
+                </p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </section>
   )
 }

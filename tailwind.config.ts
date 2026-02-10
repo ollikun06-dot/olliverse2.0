@@ -108,6 +108,14 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'scale(0.95) translateZ(0)' },
           '100%': { opacity: '1', transform: 'scale(1) translateZ(0)' },
         },
+        'energy-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px hsl(185 100% 55% / 0.1), 0 0 60px hsl(185 100% 55% / 0.05)' },
+          '50%': { boxShadow: '0 0 40px hsl(185 100% 55% / 0.2), 0 0 80px hsl(185 100% 55% / 0.1), 0 0 120px hsl(330 90% 65% / 0.05)' },
+        },
+        'slide-up-3d': {
+          '0%': { opacity: '0', transform: 'translateY(40px) rotateX(10deg) translateZ(0)' },
+          '100%': { opacity: '1', transform: 'translateY(0) rotateX(0) translateZ(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s cubic-bezier(0.16,1,0.3,1)',
@@ -119,6 +127,8 @@ const config: Config = {
         float: 'float 7s cubic-bezier(0.4,0,0.6,1) infinite',
         'glow-pulse': 'glow-pulse 2.5s cubic-bezier(0.4,0,0.6,1) infinite',
         'scale-in': 'scale-in 0.35s cubic-bezier(0.16,1,0.3,1) forwards',
+        'energy-pulse': 'energy-pulse 5s cubic-bezier(0.4,0,0.6,1) infinite',
+        'slide-up-3d': 'slide-up-3d 0.6s cubic-bezier(0.16,1,0.3,1) forwards',
       },
     },
   },
