@@ -1,139 +1,209 @@
 "use client"
 
-import { useRef, useMemo, Suspense } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
+import { useRef, useMemo, Suspense, useCallback } from "react"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { Float, Stars, MeshDistortMaterial } from "@react-three/drei"
 import * as THREE from "three"
 
-// Anime-style floating crystal/gem shapes
-function FloatingCrystal({ position, color, speed = 1, size = 1 }: {
-  position: [number, number, number]
-  color: string
-  speed?: number
-  size?: number
-}) {
-  const meshRef = useRef<THREE.Mesh>(null!)
+// Anime sakura-like falling petals
+function SakuraPetals({ count = 60 }: { count?: number }) {
+  const meshRef = useRef<THREE.InstancedMesh>(null!)
+  const dummy = useMemo(() => new THREE.Object3D(), [])
+
+  const particles = useMemo(() => {
+    return Array.from({ length: count }, () => ({
+      x: (Math.random() - 0.5) * 30,
+      y: Math.random() * 20 - 5,
+      z: (Math.random() - 0.5) * 15 - 5,
+      speedY: Math.random() * 0.008 + 0.004,
+      speedX: (Math.random() - 0.5) * 0.006,
+      rotSpeed: (Math.random() - 0.5) * 0.02,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: Math.random() * 0.5 + 0.3,
+      scale: Math.random() * 0.12 + 0.04,
+    }))
+  }, [count])
 
   useFrame((state) => {
     if (!meshRef.current) return
-    meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * speed * 0.3) * 0.3
-    meshRef.current.rotation.z = Math.cos(state.clock.elapsedTime * speed * 0.2) * 0.2
+    const t = state.clock.elapsedTime
+    for (let i = 0; i < count; i++) {
+      const p = particles[i]
+      p.y -= p.speedY
+      p.x += p.speedX + Math.sin(t * p.wobbleSpeed + p.wobble) * 0.003
+
+      if (p.y < -12) {
+        p.y = 12
+        p.x = (Math.random() - 0.5) * 30
+      }
+
+      dummy.position.set(p.x, p.y, p.z)
+      dummy.rotation.set(t * p.rotSpeed, t * p.rotSpeed * 0.7, t * p.rotSpeed * 0.5)
+      dummy.scale.setScalar(p.scale)
+      dummy.updateMatrix()
+      meshRef.current.setMatrixAt(i, dummy.matrix)
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true
   })
 
   return (
-    <Float
-      speed={speed}
-      rotationIntensity={0.6}
-      floatIntensity={1.5}
-      floatingRange={[-0.3, 0.3]}
-    >
-      <mesh ref={meshRef} position={position}>
-        <octahedronGeometry args={[size, 0]} />
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial
+        color="#e84393"
+        transparent
+        opacity={0.25}
+        side={THREE.DoubleSide}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </instancedMesh>
+  )
+}
+
+// Large anime energy sphere in center
+function EnergyCore() {
+  const meshRef = useRef<THREE.Mesh>(null!)
+  const glowRef = useRef<THREE.Mesh>(null!)
+
+  useFrame((state) => {
+    if (!meshRef.current || !glowRef.current) return
+    const t = state.clock.elapsedTime
+    const s = 1 + Math.sin(t * 0.8) * 0.15
+    meshRef.current.scale.setScalar(s)
+    meshRef.current.rotation.y = t * 0.1
+    glowRef.current.scale.setScalar(s * 1.8 + Math.sin(t * 1.2) * 0.3)
+  })
+
+  return (
+    <group position={[0, 0, -8]}>
+      <mesh ref={meshRef}>
+        <icosahedronGeometry args={[2, 4]} />
         <MeshDistortMaterial
+          color="#00d4ff"
+          emissive="#00d4ff"
+          emissiveIntensity={0.2}
+          transparent
+          opacity={0.05}
+          distort={0.4}
+          speed={2}
+          roughness={0}
+          wireframe
+        />
+      </mesh>
+      <mesh ref={glowRef}>
+        <sphereGeometry args={[2, 32, 32]} />
+        <meshBasicMaterial
+          color="#00d4ff"
+          transparent
+          opacity={0.03}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
+
+// Orbiting anime sigils / rings
+function SigilRing({ radius, speed, tilt, color }: {
+  radius: number; speed: number; tilt: number; color: string
+}) {
+  const ringRef = useRef<THREE.Mesh>(null!)
+
+  useFrame((state) => {
+    if (!ringRef.current) return
+    const t = state.clock.elapsedTime
+    ringRef.current.rotation.x = tilt + Math.sin(t * speed * 0.5) * 0.05
+    ringRef.current.rotation.z = t * speed
+  })
+
+  return (
+    <mesh ref={ringRef} position={[0, 0, -8]}>
+      <torusGeometry args={[radius, 0.015, 16, 128]} />
+      <meshBasicMaterial
+        color={color}
+        transparent
+        opacity={0.15}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </mesh>
+  )
+}
+
+// Floating anime crystals
+function Crystal({ position, color, speed = 1, size = 0.5 }: {
+  position: [number, number, number]
+  color: string; speed?: number; size?: number
+}) {
+  const ref = useRef<THREE.Mesh>(null!)
+  useFrame((state) => {
+    if (!ref.current) return
+    const t = state.clock.elapsedTime * speed
+    ref.current.rotation.x = t * 0.3
+    ref.current.rotation.z = t * 0.2
+    ref.current.position.y = position[1] + Math.sin(t * 0.5) * 0.5
+  })
+  return (
+    <Float speed={speed * 0.5} rotationIntensity={0.4} floatIntensity={0.8}>
+      <mesh ref={ref} position={position}>
+        <octahedronGeometry args={[size, 0]} />
+        <meshStandardMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={0.3}
+          emissiveIntensity={0.4}
           transparent
-          opacity={0.15}
-          distort={0.2}
-          speed={2}
+          opacity={0.12}
           roughness={0.1}
-          metalness={0.8}
+          metalness={0.9}
         />
       </mesh>
     </Float>
   )
 }
 
-// Anime energy ring
-function EnergyRing({ radius = 3, color = "#00d4ff", speed = 0.5 }: {
-  radius?: number
-  color?: string
-  speed?: number
-}) {
-  const ringRef = useRef<THREE.Mesh>(null!)
-
-  useFrame((state) => {
-    if (!ringRef.current) return
-    ringRef.current.rotation.x = Math.PI / 2 + Math.sin(state.clock.elapsedTime * speed) * 0.1
-    ringRef.current.rotation.z = state.clock.elapsedTime * speed * 0.2
-  })
-
-  return (
-    <mesh ref={ringRef} position={[0, 0, -2]}>
-      <torusGeometry args={[radius, 0.02, 16, 100]} />
-      <meshBasicMaterial color={color} transparent opacity={0.12} />
-    </mesh>
-  )
-}
-
-// Floating particles that drift upward like anime sparkles
-function AnimeParticles({ count = 100 }: { count?: number }) {
-  const particlesRef = useRef<THREE.Points>(null!)
+// Anime speed lines shooting through
+function SpeedLines({ count = 40 }: { count?: number }) {
+  const ref = useRef<THREE.Points>(null!)
 
   const [positions, velocities] = useMemo(() => {
     const pos = new Float32Array(count * 3)
-    const vel = new Float32Array(count * 3)
+    const vel = new Float32Array(count)
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 20
+      pos[i * 3] = (Math.random() - 0.5) * 25
       pos[i * 3 + 1] = (Math.random() - 0.5) * 20
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 10 - 3
-      vel[i * 3] = (Math.random() - 0.5) * 0.005
-      vel[i * 3 + 1] = Math.random() * 0.008 + 0.002
-      vel[i * 3 + 2] = (Math.random() - 0.5) * 0.003
+      pos[i * 3 + 2] = Math.random() * -15 - 5
+      vel[i] = Math.random() * 0.05 + 0.02
     }
     return [pos, vel]
   }, [count])
 
-  const sizes = useMemo(() => {
-    const s = new Float32Array(count)
-    for (let i = 0; i < count; i++) {
-      s[i] = Math.random() * 0.04 + 0.01
-    }
-    return s
-  }, [count])
-
   useFrame(() => {
-    if (!particlesRef.current) return
-    const posAttr = particlesRef.current.geometry.attributes.position as THREE.BufferAttribute
-    const posArray = posAttr.array as Float32Array
-
+    if (!ref.current) return
+    const posAttr = ref.current.geometry.attributes.position as THREE.BufferAttribute
+    const arr = posAttr.array as Float32Array
     for (let i = 0; i < count; i++) {
-      posArray[i * 3] += velocities[i * 3]
-      posArray[i * 3 + 1] += velocities[i * 3 + 1]
-      posArray[i * 3 + 2] += velocities[i * 3 + 2]
-
-      // Reset particles that drift too far
-      if (posArray[i * 3 + 1] > 12) {
-        posArray[i * 3] = (Math.random() - 0.5) * 20
-        posArray[i * 3 + 1] = -10
-        posArray[i * 3 + 2] = (Math.random() - 0.5) * 10 - 3
+      arr[i * 3 + 2] += velocities[i]
+      if (arr[i * 3 + 2] > 5) {
+        arr[i * 3] = (Math.random() - 0.5) * 25
+        arr[i * 3 + 1] = (Math.random() - 0.5) * 20
+        arr[i * 3 + 2] = -20
       }
     }
     posAttr.needsUpdate = true
   })
 
   return (
-    <points ref={particlesRef}>
+    <points ref={ref}>
       <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={count}
-          array={sizes}
-          itemSize={1}
-        />
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
       <pointsMaterial
         color="#00d4ff"
-        size={0.05}
+        size={0.03}
         transparent
-        opacity={0.5}
+        opacity={0.35}
         sizeAttenuation
         blending={THREE.AdditiveBlending}
         depthWrite={false}
@@ -142,123 +212,74 @@ function AnimeParticles({ count = 100 }: { count?: number }) {
   )
 }
 
-// Main orbiting geometric shapes
-function OrbitingShape({ orbitRadius, speed, offset, color, shape }: {
-  orbitRadius: number
-  speed: number
-  offset: number
-  color: string
-  shape: "box" | "tetra" | "dodeca" | "ico"
-}) {
-  const meshRef = useRef<THREE.Mesh>(null!)
+// Parallax camera that follows mouse
+function ParallaxCamera() {
+  const { camera } = useThree()
+  const target = useRef({ x: 0, y: 0 })
 
-  useFrame((state) => {
-    if (!meshRef.current) return
-    const t = state.clock.elapsedTime * speed + offset
-    meshRef.current.position.x = Math.cos(t) * orbitRadius
-    meshRef.current.position.y = Math.sin(t * 0.7) * orbitRadius * 0.4
-    meshRef.current.position.z = Math.sin(t) * orbitRadius * 0.5 - 3
-    meshRef.current.rotation.x = t * 0.5
-    meshRef.current.rotation.y = t * 0.3
+  const handleMouse = useCallback((e: MouseEvent) => {
+    target.current.x = (e.clientX / window.innerWidth - 0.5) * 2
+    target.current.y = (e.clientY / window.innerHeight - 0.5) * 2
+  }, [])
+
+  useFrame(() => {
+    camera.position.x += (target.current.x * 0.8 - camera.position.x) * 0.02
+    camera.position.y += (-target.current.y * 0.5 - camera.position.y) * 0.02
+    camera.lookAt(0, 0, -5)
   })
 
-  const geometry = useMemo(() => {
-    switch (shape) {
-      case "box": return <boxGeometry args={[0.4, 0.4, 0.4]} />
-      case "tetra": return <tetrahedronGeometry args={[0.35, 0]} />
-      case "dodeca": return <dodecahedronGeometry args={[0.3, 0]} />
-      case "ico": return <icosahedronGeometry args={[0.3, 0]} />
+  // Attach listener
+  useMemo(() => {
+    if (typeof window !== "undefined") {
+      window.addEventListener("mousemove", handleMouse)
     }
-  }, [shape])
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("mousemove", handleMouse)
+      }
+    }
+  }, [handleMouse])
 
-  return (
-    <mesh ref={meshRef}>
-      {geometry}
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={0.2}
-        transparent
-        opacity={0.08}
-        wireframe
-        roughness={0.3}
-      />
-    </mesh>
-  )
-}
-
-// Center glowing orb
-function GlowOrb() {
-  const meshRef = useRef<THREE.Mesh>(null!)
-
-  useFrame((state) => {
-    if (!meshRef.current) return
-    const scale = 1 + Math.sin(state.clock.elapsedTime * 0.8) * 0.1
-    meshRef.current.scale.setScalar(scale)
-  })
-
-  return (
-    <mesh ref={meshRef} position={[0, 0, -5]}>
-      <sphereGeometry args={[1.5, 32, 32]} />
-      <MeshDistortMaterial
-        color="#00d4ff"
-        emissive="#00d4ff"
-        emissiveIntensity={0.15}
-        transparent
-        opacity={0.06}
-        distort={0.3}
-        speed={1.5}
-        roughness={0}
-      />
-    </mesh>
-  )
+  return null
 }
 
 function Scene() {
   return (
     <>
-      <ambientLight intensity={0.15} />
-      <pointLight position={[5, 5, 5]} intensity={0.3} color="#00d4ff" />
-      <pointLight position={[-5, -3, 3]} intensity={0.2} color="#e84393" />
+      <ambientLight intensity={0.1} />
+      <pointLight position={[5, 5, 5]} intensity={0.4} color="#00d4ff" distance={30} />
+      <pointLight position={[-5, -3, 3]} intensity={0.3} color="#e84393" distance={25} />
+      <pointLight position={[0, 3, -3]} intensity={0.2} color="#6edb71" distance={20} />
 
-      <Stars
-        radius={50}
-        depth={50}
-        count={800}
-        factor={3}
-        saturation={0.3}
-        fade
-        speed={0.5}
-      />
+      <Stars radius={60} depth={60} count={1200} factor={3} saturation={0.2} fade speed={0.3} />
 
-      <GlowOrb />
+      <ParallaxCamera />
+      <EnergyCore />
 
-      {/* Floating crystals around the scene */}
-      <FloatingCrystal position={[-4, 2, -4]} color="#00d4ff" speed={1.2} size={0.6} />
-      <FloatingCrystal position={[5, -1, -5]} color="#e84393" speed={0.8} size={0.5} />
-      <FloatingCrystal position={[-2, -3, -3]} color="#00d4ff" speed={1.5} size={0.4} />
-      <FloatingCrystal position={[3, 3, -6]} color="#6edb71" speed={0.6} size={0.55} />
-      <FloatingCrystal position={[0, 4, -7]} color="#00d4ff" speed={1} size={0.35} />
+      {/* Multiple sigil rings at different angles */}
+      <SigilRing radius={3.5} speed={0.15} tilt={Math.PI / 3} color="#00d4ff" />
+      <SigilRing radius={5} speed={-0.1} tilt={Math.PI / 2.2} color="#e84393" />
+      <SigilRing radius={7} speed={0.06} tilt={Math.PI / 4} color="#00d4ff" />
+      <SigilRing radius={4.2} speed={-0.08} tilt={Math.PI / 1.8} color="#6edb71" />
 
-      {/* Energy rings */}
-      <EnergyRing radius={4} color="#00d4ff" speed={0.3} />
-      <EnergyRing radius={6} color="#e84393" speed={0.2} />
+      {/* Floating crystals scattered around */}
+      <Crystal position={[-5, 3, -6]} color="#00d4ff" speed={1.2} size={0.5} />
+      <Crystal position={[6, -2, -7]} color="#e84393" speed={0.8} size={0.4} />
+      <Crystal position={[-3, -4, -5]} color="#00d4ff" speed={1.5} size={0.35} />
+      <Crystal position={[4, 4, -9]} color="#6edb71" speed={0.6} size={0.5} />
+      <Crystal position={[0, 5, -10]} color="#e84393" speed={1} size={0.3} />
+      <Crystal position={[-7, 0, -8]} color="#00d4ff" speed={0.9} size={0.45} />
+      <Crystal position={[7, 1, -6]} color="#6edb71" speed={1.1} size={0.35} />
 
-      {/* Orbiting wireframe shapes */}
-      <OrbitingShape orbitRadius={5} speed={0.15} offset={0} color="#00d4ff" shape="box" />
-      <OrbitingShape orbitRadius={6} speed={0.1} offset={Math.PI / 2} color="#e84393" shape="tetra" />
-      <OrbitingShape orbitRadius={4} speed={0.2} offset={Math.PI} color="#6edb71" shape="dodeca" />
-      <OrbitingShape orbitRadius={7} speed={0.08} offset={Math.PI * 1.5} color="#00d4ff" shape="ico" />
-
-      {/* Anime sparkle particles */}
-      <AnimeParticles count={150} />
+      <SakuraPetals count={80} />
+      <SpeedLines count={50} />
     </>
   )
 }
 
 export function Anime3DBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 -z-10">
+    <div className="pointer-events-none absolute inset-0 -z-10" style={{ height: "100vh" }}>
       <Suspense fallback={null}>
         <Canvas
           camera={{ position: [0, 0, 8], fov: 60 }}

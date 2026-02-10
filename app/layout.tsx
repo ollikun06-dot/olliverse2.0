@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${spaceGrotesk.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body className={`${spaceGrotesk.variable} ${geistMono.variable} font-sans antialiased overflow-x-hidden`}>
         <SWRProvider>{children}</SWRProvider>
       </body>
     </html>

@@ -14,7 +14,7 @@ const container = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.04, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.04, delayChildren: 0.15 },
   },
 }
 
@@ -23,20 +23,31 @@ export function MangaGrid({ manga, title, subtitle }: MangaGridProps) {
     <section>
       {(title || subtitle) && (
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, x: -30, filter: "blur(6px)" }}
+          whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6"
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-6 flex items-center gap-3"
         >
-          {title && (
-            <h2 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
-              {title}
-            </h2>
-          )}
-          {subtitle && (
-            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
-          )}
+          {/* Animated neon accent bar */}
+          <motion.div
+            initial={{ height: 0 }}
+            whileInView={{ height: 40 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="w-1 rounded-full bg-primary"
+            style={{ boxShadow: "0 0 10px hsl(185 100% 55% / 0.4)" }}
+          />
+          <div>
+            {title && (
+              <h2 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+                {title}
+              </h2>
+            )}
+            {subtitle && (
+              <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
         </motion.div>
       )}
       <motion.div
