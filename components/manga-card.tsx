@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useState, useRef } from "react"
@@ -18,6 +17,7 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
   const [rotateX, setRotateX] = useState(0)
   const [rotateY, setRotateY] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
+  const [glarePos, setGlarePos] = useState({ x: 50, y: 50 })
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (!cardRef.current) return
@@ -26,8 +26,12 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
     const centerY = rect.top + rect.height / 2
     const mouseX = e.clientX - centerX
     const mouseY = e.clientY - centerY
-    setRotateX(-mouseY / 12)
-    setRotateY(mouseX / 12)
+    setRotateX(-mouseY / 10)
+    setRotateY(mouseX / 10)
+    // Glare position
+    const percentX = ((e.clientX - rect.left) / rect.width) * 100
+    const percentY = ((e.clientY - rect.top) / rect.height) * 100
+    setGlarePos({ x: percentX, y: percentY })
   }
 
   function handleMouseLeave() {
@@ -40,9 +44,14 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, y: 24, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{
+        delay: index * 0.04,
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       className="gpu-accelerated"
     >
       <Link href={`/manga/${manga.id}`} className="block">
@@ -57,23 +66,28 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
             animate={{
               rotateX,
               rotateY,
-              scale: isHovered ? 1.03 : 1,
+              scale: isHovered ? 1.04 : 1,
+              z: isHovered ? 30 : 0,
             }}
-            transition={{ type: "spring", stiffness: 200, damping: 25, mass: 0.8 }}
+            transition={{ type: "spring", stiffness: 250, damping: 22, mass: 0.8 }}
             style={{ transformStyle: "preserve-3d" }}
             className="relative overflow-hidden rounded-2xl border border-border bg-card transition-colors group-hover:border-primary/30"
           >
             {/* Image container */}
             <div className="relative aspect-[3/4] overflow-hidden">
               {imageUrl ? (
-                <img
+                <motion.img
                   src={imageUrl || "/placeholder.svg"}
                   alt={manga.title}
-                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  className="h-full w-full object-cover"
                   loading="lazy"
                   decoding="async"
                   referrerPolicy="no-referrer"
                   style={{ imageRendering: "auto" }}
+                  animate={{
+                    scale: isHovered ? 1.08 : 1,
+                  }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-secondary">
@@ -84,37 +98,59 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
               )}
 
               {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-70 transition-opacity group-hover:opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
 
               {/* Neon glow on hover */}
               <motion.div
                 animate={{ opacity: isHovered ? 1 : 0 }}
-                className="absolute inset-0 bg-gradient-to-t from-primary/15 via-transparent to-accent/10"
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-accent/10"
               />
 
-              {/* XP-like accent bar */}
+              {/* Holographic glare effect */}
+              <motion.div
+                animate={{ opacity: isHovered ? 0.15 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0"
+                style={{
+                  background: `radial-gradient(circle at ${glarePos.x}% ${glarePos.y}%, hsl(185 100% 85% / 0.3), transparent 60%)`,
+                }}
+              />
+
+              {/* Manga-style accent bar */}
               <motion.div
                 animate={{ scaleX: isHovered ? 1 : 0 }}
-                transition={{ duration: 0.3 }}
-                className="absolute bottom-0 left-0 right-0 h-0.5 origin-left bg-primary"
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute bottom-0 left-0 right-0 h-[2px] origin-left bg-gradient-to-r from-primary via-primary to-accent"
               />
+
+              {/* Corner accent - manga panel style */}
+              <motion.div
+                animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.8 }}
+                transition={{ duration: 0.3 }}
+                className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary/90 shadow-lg shadow-primary/40"
+                style={{ transform: "translateZ(30px)" }}
+              >
+                <span className="text-[8px] font-extrabold text-primary-foreground">HD</span>
+              </motion.div>
             </div>
 
-            {/* Title */}
+            {/* Title with 3D depth */}
             <div className="relative p-3" style={{ transform: "translateZ(20px)" }}>
-              <h3 className="line-clamp-2 text-sm font-bold leading-tight text-foreground">
+              <h3 className="line-clamp-2 text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
                 {manga.title}
               </h3>
             </div>
 
-            {/* Neon border glow */}
+            {/* Border glow effect */}
             <motion.div
               animate={{
                 opacity: isHovered ? 1 : 0,
                 boxShadow: isHovered
-                  ? "0 0 25px hsl(185 100% 55% / 0.15), inset 0 0 25px hsl(185 100% 55% / 0.05)"
+                  ? "0 0 30px hsl(185 100% 55% / 0.18), inset 0 0 30px hsl(185 100% 55% / 0.05)"
                   : "none",
               }}
+              transition={{ duration: 0.3 }}
               className="pointer-events-none absolute inset-0 rounded-2xl border border-primary/30"
             />
           </motion.div>

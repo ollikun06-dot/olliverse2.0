@@ -8,7 +8,19 @@ import { MangaGridSkeleton } from "@/components/manga-skeleton"
 import { fetcher, getPopularUrl, getLatestUrl, getRecentUrl } from "@/lib/manga-api"
 import type { MangaSearchResponse } from "@/lib/manga-api"
 import { CategorySection } from "@/components/category-section"
+import { RecentlyWatched } from "@/components/recently-watched"
+import { AnimeBackground } from "@/components/anime-background"
 import { motion } from "framer-motion"
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 40, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+}
 
 export default function HomePage() {
   const { data: popular, isLoading: loadingPopular } = useSWR<MangaSearchResponse>(
@@ -25,17 +37,28 @@ export default function HomePage() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
+      <AnimeBackground />
       <Navbar />
-
       <HeroSection />
+
+      {/* Recently Watched Section */}
+      <motion.div
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
+      >
+        <RecentlyWatched />
+      </motion.div>
 
       {/* Category Browse Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
       >
         <CategorySection />
@@ -43,10 +66,10 @@ export default function HomePage() {
 
       {/* Popular Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
       >
         {loadingPopular ? (
@@ -67,10 +90,10 @@ export default function HomePage() {
 
       {/* Latest Updates Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
       >
         {loadingLatest ? (
@@ -91,10 +114,10 @@ export default function HomePage() {
 
       {/* Recently Added Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
         viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="mx-auto max-w-7xl px-4 py-12 lg:px-8"
       >
         {loadingRecent ? (
@@ -114,11 +137,17 @@ export default function HomePage() {
       </motion.div>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card/50 py-8">
+      <footer className="relative border-t border-border bg-card/30 py-10 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 text-center lg:px-8">
-          <p className="text-sm text-muted-foreground">
-            MangaVerse - Powered by MangaDex. All manga content belongs to their respective creators.
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-sm text-muted-foreground"
+          >
+            OlliVerse - Powered by MangaDex. All manga content belongs to their respective creators.
+          </motion.p>
         </div>
       </footer>
     </div>

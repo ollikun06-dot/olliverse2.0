@@ -52,7 +52,13 @@ export function CategorySection() {
 
   return (
     <section>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+      >
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
             Browse by Category
@@ -61,30 +67,34 @@ export function CategorySection() {
             Explore manga, manhwa, and more by type
           </p>
         </div>
-        <Link
-          href={`/category/${active}`}
-          className="group flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
-        >
-          View all {activeCategory.label}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
-      </div>
+        <motion.div whileHover={{ x: 3 }} whileTap={{ scale: 0.97 }}>
+          <Link
+            href={`/category/${active}`}
+            className="group flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+          >
+            View all {activeCategory.label}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </motion.div>
+      </motion.div>
 
-      {/* Category tabs */}
+      {/* Category tabs with 3D transitions */}
       <div className="mb-8 flex flex-wrap gap-2">
         {categories.map((cat) => {
           const isActive = active === cat.id
           return (
-            <button
+            <motion.button
               key={cat.id}
               onClick={() => setActive(cat.id)}
+              whileHover={{ scale: 1.04, y: -2 }}
+              whileTap={{ scale: 0.96 }}
               className="relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors"
             >
               {isActive && (
                 <motion.div
                   layoutId="category-tab"
                   className={`absolute inset-0 rounded-xl ${cat.bg} ring-1 ${cat.ring}`}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
               )}
               <span
@@ -95,19 +105,20 @@ export function CategorySection() {
                 <cat.icon className="h-4 w-4" />
                 {cat.label}
               </span>
-            </button>
+            </motion.button>
           )
         })}
       </div>
 
-      {/* Content */}
+      {/* Content with 3D flip transition */}
       <AnimatePresence mode="wait">
         <motion.div
           key={active}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          initial={{ opacity: 0, y: 15, rotateX: 5, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -15, rotateX: -5, scale: 0.98 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="perspective-1000"
         >
           {isLoading ? (
             <MangaGridSkeleton count={12} />
