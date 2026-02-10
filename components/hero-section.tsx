@@ -79,7 +79,7 @@ export function HeroSection() {
             opacity: [0.12, 0.2, 0.12],
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-1/2 top-1/3 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[hsl(185,100%,55%)]/20 blur-[180px] gpu-accelerated"
+          className="absolute left-1/2 top-1/3 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-[180px] gpu-accelerated"
         />
 
         {/* Secondary accent orb */}
@@ -90,7 +90,7 @@ export function HeroSection() {
             x: [0, 30, 0],
           }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-1/4 top-2/3 h-[600px] w-[600px] rounded-full bg-[hsl(330,90%,65%)]/15 blur-[160px] gpu-accelerated"
+          className="absolute right-1/4 top-2/3 h-[600px] w-[600px] rounded-full bg-accent/15 blur-[160px] gpu-accelerated"
         />
       </motion.div>
 
@@ -103,13 +103,13 @@ export function HeroSection() {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[hsl(185,100%,55%)]/[0.06] gpu-accelerated"
+          className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/[0.06] gpu-accelerated"
         />
         {/* Energy ring 2 */}
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
-          className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[hsl(330,90%,65%)]/[0.04] gpu-accelerated"
+          className="absolute left-1/2 top-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/[0.04] gpu-accelerated"
         />
         {/* Energy ring 3 - dashed */}
         <motion.div
@@ -117,7 +117,7 @@ export function HeroSection() {
           transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
           className="absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full gpu-accelerated"
           style={{
-            border: "1px dashed hsl(185 100% 55% / 0.04)",
+            border: "1px dashed hsl(var(--primary) / 0.04)",
           }}
         />
 
@@ -211,7 +211,7 @@ export function HeroSection() {
         >
           <motion.div
             whileHover={{ scale: 1.05, rotateY: 5 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(185,100%,55%)]/20 bg-[hsl(185,100%,55%)]/[0.06] px-5 py-2 text-sm font-bold uppercase tracking-wider text-primary neon-text glass-card"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-5 py-2 text-sm font-bold uppercase tracking-wider text-primary neon-text glass-card"
           >
             <Zap className="h-4 w-4 animate-pulse" />
             New quest unlocked
@@ -259,7 +259,6 @@ export function HeroSection() {
           animate={{ opacity: 1, y: 0, z: 0 }}
           transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-muted-foreground lg:text-xl"
-          style={{ transform: "translateZ(-10px)" }}
         >
           Level up your manga game. Explore thousands of titles, track your reading quests, and discover your next obsession.
         </motion.p>
@@ -271,7 +270,6 @@ export function HeroSection() {
           transition={{ delay: 0.5, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           onSubmit={handleSearch}
           className="mx-auto mt-10 flex max-w-lg items-center gap-3"
-          style={{ transform: "translateZ(30px)" }}
         >
           <motion.div
             whileHover={{ scale: 1.02, rotateY: -2 }}
@@ -282,14 +280,14 @@ export function HeroSection() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search for your next quest..."
-              className="w-full rounded-2xl border border-border bg-[hsl(240,15%,7%)]/80 py-4 pl-12 pr-4 text-foreground shadow-2xl shadow-[hsl(185,100%,55%)]/[0.05] backdrop-blur-xl placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 neon-box transition-all"
+              className="w-full rounded-2xl border border-border bg-card/80 py-4 pl-12 pr-4 text-foreground shadow-2xl shadow-primary/[0.05] backdrop-blur-xl placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 neon-box transition-all"
             />
           </motion.div>
           <motion.button
             whileHover={{ scale: 1.08, rotateY: 5 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
-            className="flex h-[56px] items-center gap-2 rounded-2xl bg-primary px-6 font-bold text-primary-foreground shadow-xl shadow-[hsl(185,100%,55%)]/30 transition-shadow hover:shadow-[hsl(185,100%,55%)]/50 neon-border"
+            className="flex h-[56px] items-center gap-2 rounded-2xl bg-primary px-6 font-bold text-primary-foreground shadow-xl shadow-primary/30 transition-shadow hover:shadow-primary/50 neon-border"
           >
             Go
             <ArrowRight className="h-4 w-4" />
@@ -302,7 +300,6 @@ export function HeroSection() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8 flex flex-wrap items-center justify-center gap-3"
-          style={{ transform: "translateZ(15px)" }}
         >
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Hot quests:
@@ -317,7 +314,7 @@ export function HeroSection() {
               >
                 <Link
                   href={`/search?q=${encodeURIComponent(title)}`}
-                  className="block rounded-xl border border-border bg-[hsl(240,15%,7%)]/60 px-3 py-1.5 text-xs font-bold text-muted-foreground backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-primary/[0.08] hover:text-primary hover:neon-box hover:shadow-lg hover:shadow-[hsl(185,100%,55%)]/10"
+                  className="block rounded-xl border border-border bg-card/60 px-3 py-1.5 text-xs font-bold text-muted-foreground backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-primary/[0.08] hover:text-primary hover:shadow-lg hover:shadow-primary/10"
                 >
                   {title}
                 </Link>

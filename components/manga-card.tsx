@@ -140,11 +140,8 @@ export function MangaCard({ manga, index = 0 }: MangaCardProps) {
                 />
               </div>
 
-              {/* Title - floating above card in 3D */}
-              <div
-                className="relative p-3"
-                style={{ transform: "translateZ(25px)" }}
-              >
+              {/* Title */}
+              <div className="relative p-3">
                 <h3 className="line-clamp-2 text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
                   {manga.title}
                 </h3>

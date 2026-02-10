@@ -96,7 +96,7 @@ export default function HomePage() {
         </ScrollSection>
 
         {/* Footer */}
-        <footer className="relative border-t border-border bg-[hsl(240,15%,4%)]/80 py-12 backdrop-blur-xl">
+        <footer className="relative border-t border-border bg-background/80 py-12 backdrop-blur-xl">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute left-1/2 top-0 h-px w-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
           </div>

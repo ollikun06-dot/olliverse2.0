@@ -60,7 +60,7 @@ export default function ReaderPage({
           >
             <ArrowLeft className="h-4 w-4" />
             <BookOpen className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">Manga<span className="text-primary">Verse</span></span>
+            <span className="font-semibold text-foreground">Olli<span className="text-primary">Verse</span></span>
           </Link>
 
           {pages?.length ? (

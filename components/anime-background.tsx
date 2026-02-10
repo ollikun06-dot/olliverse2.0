@@ -41,7 +41,7 @@ export function AnimeBackground() {
     function resize() {
       if (!canvas) return
       canvas.width = window.innerWidth
-      canvas.height = document.documentElement.scrollHeight
+      canvas.height = window.innerHeight
       initParticles(canvas.width, canvas.height)
     }
     resize()
@@ -96,9 +96,9 @@ export function AnimeBackground() {
         style={{ y: layer1Y }}
         className="absolute inset-0 gpu-accelerated"
       >
-        <div className="absolute left-1/4 top-[10%] h-[600px] w-[600px] rounded-full bg-[hsl(185,100%,55%)]/[0.04] blur-[180px]" />
-        <div className="absolute right-1/4 top-[40%] h-[500px] w-[500px] rounded-full bg-[hsl(330,90%,65%)]/[0.03] blur-[160px]" />
-        <div className="absolute left-1/2 top-[70%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[hsl(185,100%,55%)]/[0.03] blur-[200px]" />
+        <div className="absolute left-1/4 top-[10%] h-[600px] w-[600px] rounded-full bg-primary/[0.04] blur-[180px]" />
+        <div className="absolute right-1/4 top-[40%] h-[500px] w-[500px] rounded-full bg-accent/[0.03] blur-[160px]" />
+        <div className="absolute left-1/2 top-[70%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-primary/[0.03] blur-[200px]" />
       </motion.div>
 
       {/* Mid-depth anime speed lines */}
@@ -120,7 +120,7 @@ export function AnimeBackground() {
           ].map((line, i) => (
             <div
               key={i}
-              className="absolute h-px bg-[hsl(185,100%,55%)]"
+              className="absolute h-px bg-primary"
               style={{
                 width: `${line.w}px`,
                 top: `${line.top}%`,
