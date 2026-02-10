@@ -37,7 +37,7 @@ export default function HomePage() {
   )
 
   return (
-    <div className="min-h-screen">
+    <div className="relative min-h-screen">
       <AnimeBackground />
       <Navbar />
       <HeroSection />

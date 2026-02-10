@@ -228,10 +228,16 @@ export default function MangaDetailPage({
                     transition={{ delay: 0.4 }}
                     className="mt-4 flex flex-wrap items-center gap-4 text-sm text-muted-foreground"
                   >
-                    {manga.chapters && (
+                    {manga.chapters && manga.chapters.length > 0 && (
                       <span className="flex items-center gap-1.5">
                         <BookOpen className="h-4 w-4" />
                         {manga.chapters.length} chapters
+                      </span>
+                    )}
+                    {manga.chapters && manga.chapters.length === 0 && (
+                      <span className="flex items-center gap-1.5 text-muted-foreground/60">
+                        <BookOpen className="h-4 w-4" />
+                        No chapters yet
                       </span>
                     )}
                     {manga.status && (

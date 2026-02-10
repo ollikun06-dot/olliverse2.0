@@ -173,28 +173,31 @@ export async function getMangaInfo(id: string): Promise<MangaInfo> {
   const tags = manga.attributes.tags as Array<{ attributes: { name: Record<string, string> } }> | undefined
   const altTitlesList = manga.attributes.altTitles as Array<Record<string, string>> | undefined
 
-  // Fetch English chapters first
+  // Fetch chapters using the aggregate endpoint first to get the total count
+  // Then fetch actual chapter data
   const chapParams = new URLSearchParams()
   chapParams.append("manga", id)
-  chapParams.append("limit", "96")
+  chapParams.append("limit", "100")
   chapParams.append("offset", "0")
   chapParams.append("translatedLanguage[]", "en")
   chapParams.append("order[chapter]", "asc")
   chapParams.append("contentRating[]", "safe")
   chapParams.append("contentRating[]", "suggestive")
+  chapParams.append("contentRating[]", "erotica")
   chapParams.append("includes[]", "scanlation_group")
   let chapRes = await fetch(`${MANGADEX}/chapter?${chapParams}`, { next: { revalidate: 60 } })
   let chapJson = chapRes.ok ? await chapRes.json() : { data: [] }
 
   // If no English chapters found, try without language filter
-  if (chapJson.data.length === 0) {
+  if (!chapJson.data || chapJson.data.length === 0) {
     const fallbackParams = new URLSearchParams()
     fallbackParams.append("manga", id)
-    fallbackParams.append("limit", "96")
+    fallbackParams.append("limit", "100")
     fallbackParams.append("offset", "0")
     fallbackParams.append("order[chapter]", "asc")
     fallbackParams.append("contentRating[]", "safe")
     fallbackParams.append("contentRating[]", "suggestive")
+    fallbackParams.append("contentRating[]", "erotica")
     fallbackParams.append("includes[]", "scanlation_group")
     chapRes = await fetch(`${MANGADEX}/chapter?${fallbackParams}`, { next: { revalidate: 60 } })
     chapJson = chapRes.ok ? await chapRes.json() : { data: [] }

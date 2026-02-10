@@ -34,6 +34,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       className="relative flex min-h-[95vh] flex-col items-center justify-center overflow-hidden px-4"
+      style={{ position: "relative" }}
     >
       {/* Hero anime BG with parallax */}
       <motion.div

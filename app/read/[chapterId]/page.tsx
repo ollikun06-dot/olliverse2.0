@@ -3,31 +3,64 @@
 import { use } from "react"
 import useSWR from "swr"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { fetcher, getChapterPagesUrl, proxyImage } from "@/lib/manga-api"
 import type { ChapterPage } from "@/lib/manga-api"
+import { addToRecentlyWatched, updateReadingProgress } from "@/lib/recently-watched"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowLeft, ChevronUp, Loader2, AlertCircle, BookOpen } from "lucide-react"
-import { useState, useEffect, useCallback } from "react"
+import { ArrowLeft, ChevronUp, Loader2, AlertCircle, BookOpen, Zap } from "lucide-react"
+import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 
-export default function ReaderPage({
-  params,
-}: {
-  params: Promise<{ chapterId: string }>
-}) {
-  const { chapterId } = use(params)
+function ReaderContent({ chapterId }: { chapterId: string }) {
+  const searchParams = useSearchParams()
+  const mangaId = searchParams.get("mangaId") || ""
+  const mangaTitle = searchParams.get("mangaTitle") || "Unknown"
+  const mangaImage = searchParams.get("mangaImage") || ""
+
   const { data: pages, isLoading, error } = useSWR<ChapterPage[]>(
     getChapterPagesUrl(chapterId),
     fetcher
   )
   const [showScrollTop, setShowScrollTop] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const hasTrackedRef = useRef(false)
+
+  // Track this manga in recently watched when pages load
+  useEffect(() => {
+    if (pages && pages.length > 0 && mangaId && !hasTrackedRef.current) {
+      hasTrackedRef.current = true
+      addToRecentlyWatched({
+        mangaId,
+        mangaTitle: decodeURIComponent(mangaTitle),
+        mangaImage: decodeURIComponent(mangaImage),
+        chapterId,
+        chapterTitle: `Chapter`,
+        page: 1,
+        totalPages: pages.length,
+        timestamp: Date.now(),
+      })
+    }
+  }, [pages, mangaId, mangaTitle, mangaImage, chapterId])
+
+  // Update reading progress as user scrolls
+  useEffect(() => {
+    if (mangaId && currentPage > 1 && pages) {
+      updateReadingProgress(
+        mangaId,
+        chapterId,
+        `Chapter`,
+        currentPage,
+        pages.length
+      )
+    }
+  }, [currentPage, mangaId, chapterId, pages])
 
   const handleScroll = useCallback(() => {
     setShowScrollTop(window.scrollY > 500)
 
-    // Track current page based on scroll position
     if (pages?.length) {
-      const scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight)
+      const scrollPercent =
+        window.scrollY / (document.body.scrollHeight - window.innerHeight)
       const pageNum = Math.min(
         Math.ceil(scrollPercent * pages.length) || 1,
         pages.length
@@ -54,20 +87,44 @@ export default function ReaderPage({
         className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl"
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <BookOpen className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-foreground">Manga<span className="text-primary">Verse</span></span>
-          </Link>
+          <div className="flex items-center gap-3">
+            {mangaId ? (
+              <Link
+                href={`/manga/${mangaId}`}
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Link>
+            ) : (
+              <Link
+                href="/"
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Home
+              </Link>
+            )}
+            <div className="flex items-center gap-1.5">
+              <Zap className="h-4 w-4 text-primary" />
+              <span className="font-semibold text-foreground">
+                Olli<span className="text-primary">Verse</span>
+              </span>
+            </div>
+          </div>
 
-          {pages?.length ? (
-            <span className="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
-              {currentPage} / {pages.length}
-            </span>
-          ) : null}
+          <div className="flex items-center gap-3">
+            {mangaTitle && mangaTitle !== "Unknown" && (
+              <span className="hidden text-xs text-muted-foreground sm:block max-w-[200px] truncate">
+                {decodeURIComponent(mangaTitle)}
+              </span>
+            )}
+            {pages?.length ? (
+              <span className="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
+                {currentPage} / {pages.length}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -87,7 +144,9 @@ export default function ReaderPage({
           <div className="flex items-center justify-center py-32">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Loading chapter...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading chapter...
+              </p>
             </div>
           </div>
         )}
@@ -115,13 +174,16 @@ export default function ReaderPage({
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "300px" }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                transition={{
+                  duration: 0.3,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
                 className="relative"
               >
                 <img
-                  src={proxyImage(page.img) || "/placeholder.svg"}
+                  src={proxyImage(page.img)}
                   alt={`Page ${page.page}`}
-                  className="w-full h-auto"
+                  className="h-auto w-full"
                   loading={index < 3 ? "eager" : "lazy"}
                   decoding={index < 3 ? "sync" : "async"}
                   fetchPriority={index < 3 ? "high" : "auto"}
@@ -136,12 +198,22 @@ export default function ReaderPage({
               <p className="text-lg font-semibold text-foreground">
                 End of Chapter
               </p>
-              <Link
-                href="/"
-                className="rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40"
-              >
-                Browse More Manga
-              </Link>
+              <div className="flex items-center gap-3">
+                {mangaId && (
+                  <Link
+                    href={`/manga/${mangaId}`}
+                    className="rounded-xl border border-border bg-card px-6 py-3 font-semibold text-foreground transition-all hover:bg-secondary"
+                  >
+                    All Chapters
+                  </Link>
+                )}
+                <Link
+                  href="/"
+                  className="rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-primary/40"
+                >
+                  Browse More
+                </Link>
+              </div>
             </div>
           </div>
         )}
@@ -174,5 +246,28 @@ export default function ReaderPage({
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+export default function ReaderPage({
+  params,
+}: {
+  params: Promise<{ chapterId: string }>
+}) {
+  const { chapterId } = use(params)
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <ReaderContent chapterId={chapterId} />
+    </Suspense>
   )
 }
